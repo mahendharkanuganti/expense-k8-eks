@@ -4,7 +4,8 @@ metadata:
   name: backend
   namespace: expense
 data:
-  DB_HOST: mysql #it is the service name of mysql which is again mysql
+  #DB_HOST: mysql #it is the service name of mysql which is again mysql
+  DB_HOST: db-dev.mahidevops.cloud
 ---
 apiVersion: apps/v1
 kind: Deployment
