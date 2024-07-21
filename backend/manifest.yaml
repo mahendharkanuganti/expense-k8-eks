@@ -4,15 +4,15 @@ metadata:
   name: backend
   namespace: expense
 data:
-  #DB_HOST: mysql #it is the service name of mysql which is again mysql
-  DB_HOST: db-dev.mahidevops.cloud
+  #DB_HOST: mysql # mysql component service name
+  DB_HOST: db-dev.daws78s.online
 ---
-apiVersion: apps/v1
 kind: Deployment
+apiVersion: apps/v1
 metadata:
   name: backend
   namespace: expense
-  #below are deployment related labels
+  # these labels are deployment related labels
   labels:
     component: backend
     project: expense
@@ -24,7 +24,7 @@ spec:
       component: backend
       project: expense
       tier: app
-  # pod definition 
+  # pod definition
   template:
     metadata:
       labels:
@@ -32,12 +32,39 @@ spec:
         project: expense
         tier: app
     spec:
+      initContainers:
+      - name: init-myservice
+        image: busybox:1.28
+        command: ['sh', '-c', "until nslookup db-dev.mahidevops.cloud; do echo waiting for myservice; sleep 2; done"]
       containers:
       - name: backend
-        image: mahendhar501/backend:v1.0
+        image: joindevops/backend:v1.0
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "150m"
+            memory: "256Mi"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          failureThreshold: 2
+          periodSeconds: 5
+          initialDelaySeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          failureThreshold: 2
+          periodSeconds: 5
+          initialDelaySeconds: 30
         envFrom:
         - configMapRef:
-            name: backend 
+            name: backend
+
+
 ---
 apiVersion: v1
 kind: Service
@@ -51,5 +78,5 @@ spec:
     tier: app
   ports:
   - protocol: TCP
-    port: 8080 #service port
-    targetPort: 8080 # target port
+    port: 8080 #service-port
+    targetPort: 8080 #target-port
